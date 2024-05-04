@@ -11,6 +11,7 @@ import (
 	"socrata/src/util"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/joho/godotenv"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -21,6 +22,10 @@ const LIMIT = 10
 var topHeader table.Row
 
 func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+
 	topHeader = make([]interface{}, LIMIT)
 	for i := range LIMIT {
 		topHeader[i] = fmt.Sprintf("#%d", i)
@@ -29,12 +34,11 @@ func init() {
 }
 
 func main() {
-	token := os.Getenv("SOCRATA_TOKEN")
-	if len(token) == 0 {
+	token, ok := os.LookupEnv("SOCRATA_TOKEN")
+	if !ok {
 		log.Printf("No token provided. Using default requests quota.")
 	}
 	socrataClient := client.NewClient(token)
-	//socrataClient := localjson.NewClient("dump.json")
 	realEstateTransactions, err := socrataClient.GetTransactions()
 	if err != nil {
 		log.Fatal(err)

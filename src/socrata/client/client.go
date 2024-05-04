@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"os"
 	"sync/atomic"
 	"time"
 
@@ -16,7 +15,10 @@ import (
 	"github.com/SebastiaanKlippert/go-soda"
 )
 
-const batchSize = 5000
+const (
+	batchSize = 5000
+	logRate   = 20 // log every `logRate` loaded batch in order to see progress in console
+)
 
 type Client struct {
 	token string
@@ -38,7 +40,7 @@ func (client *Client) GetTransactions() ([]*socrata.RealEstateTransaction, error
 
 	g := new(errgroup.Group)
 	g.SetLimit(10)
-	total := uint32(0)
+	count := uint32(0)
 
 	for i := 0; i < 10; i++ {
 		g.Go(func() error {
@@ -55,8 +57,10 @@ func (client *Client) GetTransactions() ([]*socrata.RealEstateTransaction, error
 				if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 					return err
 				}
-				atomic.AddUint32(&total, uint32(len(data)))
-				log.Printf("goroutine %d got %d records. total %d", i, len(data), total)
+				atomic.AddUint32(&count, uint32(len(data)))
+				if count%(batchSize*logRate) == 0 {
+					log.Printf("got %d/%d records", count, offsetRequest.Count())
+				}
 
 				dataChannel <- data
 			}
@@ -67,9 +71,7 @@ func (client *Client) GetTransactions() ([]*socrata.RealEstateTransaction, error
 		g.Wait()
 		close(dataChannel)
 	}()
-	rawData := make([]*internal.RawData, 0, batchSize)
 	for data := range dataChannel {
-		rawData = append(rawData, data...)
 		for _, d := range data {
 			if time.Time(d.SaleTs).IsZero() {
 				log.Printf("Empty year for tx: %s\n", d.SerialNumber)
@@ -77,28 +79,10 @@ func (client *Client) GetTransactions() ([]*socrata.RealEstateTransaction, error
 			}
 			result = append(result, d.ToDomain())
 		}
-		//result = append(result, util.Transform(data, (*internal.RawData).ToDomain)...)
 	}
 	if err := g.Wait(); err != nil {
 		return nil, err
 	}
-	//save raw data to file
-	file, err := os.Create("dump.json")
-	if err != nil {
-		return nil, err
-	}
-	if err := json.NewEncoder(file).Encode(rawData); err != nil {
-		return nil, err
-	}
-
-	log.Printf("Total transactions: %d\n", len(result))
-	emptyYears := 0
-	for _, transaction := range result {
-		if transaction.SaleYear == 0 {
-			emptyYears++
-		}
-	}
-	log.Printf("Empty years: %d\n", emptyYears)
 	return result, nil
 }
 

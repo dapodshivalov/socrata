@@ -17,6 +17,8 @@ var CollectedMetrics = []MetricType{
 	AVG_VOLUME,
 }
 
+// ----------------------------------------
+
 type Metric struct {
 	Type  MetricType
 	Town  socrata.Town
@@ -30,6 +32,8 @@ func MakeMetric(t MetricType, town socrata.Town, value float64) *Metric {
 		Value: value,
 	}
 }
+
+// ----------------------------------------
 
 type MetricsMap map[MetricType]*Metric
 

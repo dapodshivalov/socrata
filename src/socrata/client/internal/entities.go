@@ -11,9 +11,7 @@ import (
 
 type FloatingTimestamp time.Time
 
-// UnmarshalJSON for CustomTime to parse time in RFC3339 format
 func (ct *FloatingTimestamp) UnmarshalJSON(b []byte) error {
-	// Trim quotes, since JSON strings are quoted
 	s := string(b)
 	if s == "null" {
 		return nil
@@ -31,6 +29,8 @@ func (ct FloatingTimestamp) MarshalJSON() ([]byte, error) {
 	t := time.Time(ct)
 	return []byte(fmt.Sprintf("\"%s\"", t.Format("2006-01-02T15:04:05"))), nil
 }
+
+// ----------------------------------------
 
 type FloatNumber float32
 
@@ -51,6 +51,8 @@ func (fl *FloatNumber) UnmarshalJSON(b []byte) error {
 func (fl FloatNumber) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%f\"", fl)), nil
 }
+
+// ----------------------------------------
 
 type RawData struct {
 	SerialNumber string            `json:"serialnumber"`

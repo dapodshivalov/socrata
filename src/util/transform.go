@@ -2,14 +2,6 @@ package util
 
 import "sort"
 
-func Transform[T any, E any](slice []T, mapper func(T) E) []E {
-	var result []E
-	for _, v := range slice {
-		result = append(result, mapper(v))
-	}
-	return result
-}
-
 func SliceToMap[V any, K comparable](slice []V, keyExtractor func(V) K) map[K]V {
 	result := make(map[K]V)
 	for _, v := range slice {
