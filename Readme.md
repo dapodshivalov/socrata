@@ -3,7 +3,7 @@ Socrata - is a command line program that use data from Socrata API and return
 and 10 towns that have the highest volume of sales
 for each year available in the dataset.
 
-This program is solution for home assignment for Software Engineer position.
+This program is solution for home assignment for the position of Software Engineer.
 
 ### Task
 > Using the API of [Socrata](https://dev.socrata.com/foundry/data.ct.gov/5mzw-sjtu) 
@@ -18,7 +18,13 @@ for each year available in the dataset.
 > Take home part should not be a “production ready” solution, 
 however we encourage you to write a clean and readable code like you would do in real life.
 
-### Run 
+### Prerequisites
+
+To run this program you need to have Golang version 1.22 installed on your machine.
+To see how to install Golang click [here](https://go.dev/doc/install). 
+
+### Run
+
 **Without token**
 ```
 go run src/main.go
@@ -31,12 +37,13 @@ SOCRATA_TOKEN=YOUR_TOKEN go run src/main.go
 
 **With token using .env file**
 
-Create .env file in project root directory
-Add this line:
+1) Create .env file in project root directory
+
+2) Add this line:
 ```
 SOCRATA_TOKEN=YOUR_TOKEN
 ```
-Now you can run
+3) Now you can run
 ```
 go run src/main.go
 ```
